@@ -13,5 +13,6 @@ urlpatterns = [
     path('admin-logout/', views.adminlogout, name='adminlogout'),
     path('edit-task/<int:task_id>/', views.edittask, name='edit_task'),
     path('delete-task/<int:task_id>/', views.deletetask, name='delete_task'),
+    path('update-task-status/<int:task_id>/', views.updatetaskstatus, name='update_status'),
     path('complete-task/<int:task_id>/', views.completetask, name='complete_task'),
 ]

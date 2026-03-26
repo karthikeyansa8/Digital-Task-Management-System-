@@ -153,7 +153,7 @@ def reset_password(request, uidb64, token):
 
 @login_required(login_url='login')
 def user(request):
-    user_tasks = UserTask.objects.filter(user_id=request.user).select_related('task')
+    user_tasks = UserTask.objects.filter(user_id=request.user).select_related('task').order_by('id')
     return render(request,'user.html',{'usertasks':user_tasks})
     
 @login_required(login_url='adminlogin')
@@ -187,6 +187,7 @@ def edittask(request,task_id):
     task.title = request.POST.get('title')
     task.description = request.POST.get('description')
     task.task_link = request.POST.get('task_link')
+    task.updated_at = now().datetime
     task.save()
     messages.success(request,'Task updated Successfully!')
     
@@ -196,7 +197,8 @@ def edittask(request,task_id):
 @require_POST
 def deletetask(request,task_id):
     taskdelete = get_object_or_404(Task, id=task_id)
-    taskdelete.delete()
+    taskdelete.deleted_at = now().datetime
+    taskdelete.save()
     messages.success(request,'Task deleted Successfully!')
     
     return redirect('admin')
@@ -210,4 +212,23 @@ def completetask(request,task_id):
     usertask.save()
     messages.success(request,'Task marked as completed!')
     
+    return redirect('user')
+
+
+@login_required(login_url='login')
+@require_POST
+def updatetaskstatus(request, task_id):
+    user_task = UserTask.objects.get(id=task_id, user=request.user)
+
+    new_status = request.POST.get("status")
+
+    if new_status in ['pending', 'in_progress', 'completed']:
+        user_task.status = new_status
+        user_task.updated_at = now().datetime
+        user_task.save()
+    
+    if new_status == 'completed':
+        user_task.completed_at = now().datetime
+        user_task.save()
+
     return redirect('user')
