@@ -222,7 +222,7 @@ def admin(request):
     }
     
     
-    # --------------------USER STATS CALCULATION--------------------
+    # --------------------USER SHOWING AND STATS CALCULATION--------------------
     # Show user stats for all users (excluding the admin and soft-deleted tasks)
     
     # Always calculate user stats (will be populated by JavaScript, always default to hidden)
