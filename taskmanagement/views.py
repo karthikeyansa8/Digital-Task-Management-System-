@@ -1,9 +1,9 @@
-from arrow import now
+from django.utils import timezone
 from django.shortcuts import get_object_or_404, render,redirect
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 from taskmanagement.models import Task, UserTask
-from .forms import AdminLoginForm, ForgotPasswordForm, LoginForm, RegistrationForm, ResetPasswordForm, TaskForm
+from .forms import AdminLoginForm, ForgotPasswordForm, LoginForm, RegistrationForm, ResetPasswordForm, TaskForm, TaskProofForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login , logout as auth_logout
 from django.contrib.auth.models import User
@@ -14,6 +14,7 @@ from django.contrib.sites.shortcuts import get_current_site # --> for get curren
 from django.template.loader import render_to_string # --> for render a template to str
 from django.core.mail import send_mail # --> for send a mail
 from django.contrib.auth.decorators import login_required 
+from django.views.decorators.cache import cache_page
 
 def register(request):
     
@@ -177,6 +178,7 @@ def user(request):
     return render(request,'user.html',{'usertasks':user_tasks, 'stats':stats})
     
 @login_required(login_url='adminlogin')
+@cache_page(60 * 2)  # Cache the admin dashboard for 15 minutes to improve performance
 def admin(request):
     
     form = TaskForm()
@@ -226,6 +228,7 @@ def admin(request):
     # Show user stats for all users (excluding the admin and soft-deleted tasks)
     
     # Always calculate user stats (will be populated by JavaScript, always default to hidden)
+    users_with_stats = []
     if request.method == 'GET':
         print("Calculating user stats...")
         users_with_stats = []
@@ -257,7 +260,8 @@ def edittask(request,task_id):
     task.title = request.POST.get('title')
     task.description = request.POST.get('description')
     task.task_link = request.POST.get('task_link')
-    task.updated_at = now().datetime
+    task.due_date = request.POST.get('due_date') if request.POST.get('due_date') else None
+    task.updated_at = timezone.now()
     task.save()
     messages.success(request,'Task updated Successfully!')
     
@@ -267,7 +271,7 @@ def edittask(request,task_id):
 @require_POST
 def deletetask(request,task_id):
     taskdelete = get_object_or_404(Task, id=task_id)
-    taskdelete.deleted_at = now().datetime
+    taskdelete.deleted_at = timezone.now()
     taskdelete.save()
     messages.success(request,'Task deleted Successfully!')
     
@@ -278,7 +282,7 @@ def deletetask(request,task_id):
 def completetask(request,task_id):
     usertask = get_object_or_404(UserTask, user=request.user, task_id=task_id)
     usertask.is_completed = True
-    usertask.completed_at = now().datetime
+    usertask.completed_at = timezone.now()
     usertask.save()
     messages.success(request,'Task marked as completed!')
     
@@ -294,11 +298,38 @@ def updatetaskstatus(request, task_id):
 
     if new_status in ['pending', 'in_progress', 'completed']:
         user_task.status = new_status
-        user_task.updated_at = now().datetime
+        user_task.updated_at = timezone.now()
         user_task.save()
     
-    if new_status == 'completed':
-        user_task.completed_at = now().datetime
-        user_task.save()
 
+    return redirect('user')
+
+
+@login_required(login_url='login')
+@require_POST
+def submit_task_proof(request, task_id):
+    """Handle task proof submission with photo and/or GitHub link"""
+    user_task = get_object_or_404(UserTask, id=task_id, user=request.user)
+    
+    form = TaskProofForm(request.POST, request.FILES, instance=user_task)
+    
+    if form.is_valid():
+        # Save the proof and update task status to completed
+        user_task = form.save(commit=False)
+        user_task.status = 'completed'
+        user_task.updated_at = timezone.now()
+        user_task.completed_at = timezone.now()
+        user_task.save()
+        
+        messages.success(request, 'Task submitted successfully with proof! 🎉')
+    else:
+        # Show validation errors
+        error_messages = []
+        for field, errors in form.errors.items():
+            for error in errors:
+                error_messages.append(f"{field}: {error}")
+        
+        for error_msg in error_messages:
+            messages.error(request, error_msg)
+    
     return redirect('user')

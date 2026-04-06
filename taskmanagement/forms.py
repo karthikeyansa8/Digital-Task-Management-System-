@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 
-from taskmanagement.models import Task
+from taskmanagement.models import Task, UserTask
 
 
 class RegistrationForm(forms.ModelForm):
@@ -103,11 +103,40 @@ class ResetPasswordForm(forms.Form):
     
 class TaskForm(forms.ModelForm):
     title = forms.CharField(label='title', max_length=100, required=True)
-    description = forms.CharField(label='description', widget=forms.Textarea, required=True)
-    task_link = forms.URLField(label='task_link', required=True)
+    description = forms.CharField(label='description', widget=forms.Textarea(), required=True)
+    task_link = forms.URLField(label='task_link', required=True )
+    due_date = forms.DateField(label='due_date', required=True )
     
     class Meta:
         model = Task
-        fields = ['title','description','task_link']
+        fields = ['title','description','task_link','due_date']
+
+
+class TaskProofForm(forms.ModelForm):
+    submitted_proof = forms.ImageField(label='Upload Proof Photo', required=False, widget=forms.FileInput(attrs={
+        'class': 'form-control',
+        'accept': 'image/*',
+        'id': 'id_submitted_proof'
+    }))
+    gitlink = forms.URLField(label='GitHub Link', required=False, widget=forms.URLInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'https://github.com/...',
+        'id': 'id_gitlink'
+    }))
+    
+    class Meta:
+        model = UserTask
+        fields = ['submitted_proof', 'gitlink']
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        submitted_proof = cleaned_data.get('submitted_proof')
+        gitlink = cleaned_data.get('gitlink')
+        
+        # At least one proof method should be provided
+        if not submitted_proof and not gitlink:
+            raise forms.ValidationError("Please provide either a proof photo or a GitHub link to complete the task.")
+        
+        return cleaned_data
         
    

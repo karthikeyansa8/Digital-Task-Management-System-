@@ -79,9 +79,46 @@
                 </div>
 
                 <div class="mb-3">
-                <button class="btn btn-primary admin-create-btn" data-bs-toggle="collapse" data-bs-target="#createTaskForm" aria-expanded="false" aria-controls="createTaskForm">
+                <button class="btn btn-primary admin-create-btn" data-bs-toggle="modal" data-bs-target="#createTaskModal" style="gap: 0.5rem; display: inline-flex; align-items: center;">
                     + Create Task
                 </button>
+                </div>
+
+                <!-- Create Task Modal -->
+                <div class="modal fade" id="createTaskModal" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title">Create New Task</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <form method="post">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                          <div class="mb-3">
+                            <label for="id_title" class="form-label">📋 Task Title</label>
+                            <input type="text" name="title" class="form-control" id="id_title" placeholder="Enter task title" required />
+                          </div>
+                          <div class="mb-3">
+                            <label for="id_description" class="form-label">📝 Task Description</label>
+                            <textarea name="description" class="form-control" id="id_description" placeholder="Enter task description" rows="4" required></textarea>
+                          </div>
+                          <div class="mb-3">
+                            <label for="id_task_link" class="form-label">🔗 Task Link</label>
+                            <input type="url" name="task_link" class="form-control" id="id_task_link" placeholder="https://example.com" required />
+                          </div>
+                          <div class="mb-3">
+                            <label for="id_due_date" class="form-label">📅 Due Date <span class="text-muted"></span></label>
+                            <input type="date" name="due_date" class="form-control" id="id_due_date" />
+                          </div>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                          <button type="submit" class="btn btn-success">Create Task</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
                 </div>
 
                 <div id="createTaskForm" class="collapse mb-4">
@@ -117,6 +154,11 @@
                             <div class="card-body d-flex flex-column">
                             <h5 class="card-title">{{ task.title }}</h5>
                             <p class="card-text text-secondary flex-grow-1">{{ task.description }}</p>
+                            {% if task.due_date %}
+                            <p class="card-text" style="font-size: 0.875rem; color: #6366f1;">
+                              <strong>📅 Due:</strong> {{ task.due_date|date:"M d, Y" }}
+                            </p>
+                            {% endif %}
                             <a href="{{ task.task_link }}" target="_blank" class="btn btn-outline-primary btn-sm mb-3">Open Task</a>
 
                             <div class="d-flex gap-2">
@@ -147,8 +189,12 @@
                                 <div class="mb-3">
                                     <textarea name="description" class="form-control" rows="4" required>{{ task.description }}</textarea>
                                 </div>
-                                <div>
+                                <div class="mb-3">
                                     <input type="url" name="task_link" class="form-control" value="{{ task.task_link }}" required />
+                                </div>
+                                <div class="mb-3">
+                                    <label for="id_due_date_edit_{{ task.id }}" class="form-label">📅 Due Date <span class="text-muted"></span></label>
+                                    <input type="date" name="due_date" class="form-control" id="id_due_date_edit_{{ task.id }}" value="{% if task.due_date %}{{ task.due_date|date:'Y-m-d' }}{% endif %}" />
                                 </div>
                                 </div>
                                 <div class="modal-footer">
