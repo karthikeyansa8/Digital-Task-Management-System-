@@ -33,4 +33,4 @@ class UserTask(models.Model):
     gitlink = models.URLField(null=True, blank=True)
     
     def __str__(self):
-        return f"{self.user.username} - {self.task.title} - {'Completed' if self.is_completed else 'Pending'}"
+        return f"{self.user.username} - {self.task.title} - "
