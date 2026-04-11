@@ -157,8 +157,10 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'taskmanagement' / 'media'
+
+# MEDIA FILES SETTINGS
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = BASE_DIR / 'taskmanagement' / 'media'
 
 
 # redis for caching
