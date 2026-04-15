@@ -54,6 +54,8 @@ CLOUDINARY_STORAGE = {
 }
 
 print("CLOUDINARY NAME:", os.getenv('CLOUDINARY_CLOUD_NAME'))
+print("CLOUDINARY API KEY:", os.getenv('CLOUDINARY_API_KEY'))
+print("CLOUDINARY API SECRET:", os.getenv('CLOUDINARY_API_SECRET'))
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
