@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from cloudinary.models import CloudinaryField
 
 class Task(models.Model):
     title = models.CharField(max_length=100)
@@ -29,7 +30,7 @@ class UserTask(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
-    submitted_proof = models.ImageField(upload_to='task_proofs/', null=True, blank=True)
+    submitted_proof = CloudinaryField('image', null=True, blank=True)
     gitlink = models.URLField(null=True, blank=True)
     
     def __str__(self):
