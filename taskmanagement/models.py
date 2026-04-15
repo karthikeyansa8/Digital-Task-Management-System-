@@ -30,7 +30,7 @@ class UserTask(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
-    submitted_proof = CloudinaryField('image', null=True, blank=True)
+    submitted_proof = CloudinaryField('image', folder = 'task_proofs',null=True, blank=True)
     gitlink = models.URLField(null=True, blank=True)
     
     def __str__(self):
